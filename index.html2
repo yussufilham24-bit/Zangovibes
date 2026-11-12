@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="sw">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#100d19">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ZANGO VIBES V2">
+<title>ZANGO VIBES V2</title>
+<style>
+:root{color-scheme:dark;--v2-bg:#0b0812;--v2-panel:#171221;--v2-line:#30243f;--v2-muted:#a99bbd;--v2-pink:#ec4899;--v2-purple:#8b5cf6}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--v2-bg);color:#fff;font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+#v2Boot{min-height:100vh;display:grid;place-items:center;padding:24px;text-align:center;background:radial-gradient(ellipse at top,#25143c 0%,#0b0812 60%)}
+#v2Boot .v2bootbox{max-width:440px;width:100%;padding:28px;border:1px solid #48345f;border-radius:22px;background:#171221}
+#v2Boot h1{margin:0 0 8px;font-size:28px;font-weight:950;letter-spacing:.5px;background:linear-gradient(110deg,#ec4899,#a78bfa);color:transparent;background-clip:text}
+#v2Boot p{color:#c4b5d6;line-height:1.5}
+#v2Boot .v2spinner{width:30px;height:30px;border:3px solid #49365f;border-top-color:#ec4899;border-radius:50%;margin:18px auto 0;animation:v2spin .8s linear infinite}
+@keyframes v2spin{to{transform:rotate(360deg)}}
+#v2Boot .v2error{color:#fecaca;text-align:left;overflow-wrap:anywhere;font-size:13px}
+</style>
+</head>
+<body>
+<div id="v2Boot"><div class="v2bootbox"><h1>ZANGO VIBES</h1><b>Toleo la V2</b><p>Inafungua akaunti, posts, Music Library na Creator Studio zako...</p><div class="v2spinner"></div><div id="v2Error" class="v2error"></div></div></div>
+<script>
+(async function startZangoVibesV2(){
+  const boot=document.getElementById('v2Boot');
+  const errorBox=document.getElementById('v2Error');
+  try{
+    const response=await fetch('/index.html',{cache:'no-store',credentials:'same-origin'});
+    if(!response.ok)throw new Error('Imeshindikana kufungua index.html (HTTP '+response.status+'). Hakikisha v2.html na index.html zipo pamoja kwenye folder kuu ya GitHub.');
+    let html=await response.text();
+    if(!html.includes('SUPABASE_URL=')||!html.includes('function loadFeed'))throw new Error('index.html haionekani kuwa faili la ZANGO VIBES V1.6 linalotarajiwa.');
+
+    const v2css=`
+/* ZANGO VIBES V2 — Reels inspired layout */
+:root{--bg:#0b0812;--panel:#171221;--panel2:#21182e;--line:#30243f;--text:#fff;--muted:#aa9bbd;--pink:#ec4899;--purple:#8b5cf6;--grad:linear-gradient(115deg,#ec4899,#8b5cf6)}
+body{background:#0b0812;padding-bottom:82px}
+.top{background:#0b0812f2;border-bottom:1px solid #2a2038}
+.topin{height:62px}
+.brand{font-size:23px;letter-spacing:.7px}
+.topactions{display:flex;align-items:center;gap:6px}
+.topactions .v2-icon{width:40px;height:40px;padding:0;border-radius:13px;background:#21182e;border:1px solid #3a2b4d;color:#fff;font-size:18px;position:relative}
+.topactions #logoutBtn{font-size:12px;padding:9px 11px}
+#feedTabs{padding-top:9px}
+#feedTabs .tab{font-size:12px;padding:8px 15px}
+#homePage{padding-top:2px}
+#peopleStrip{margin:12px 0 14px;padding:12px;background:#171221;border:1px solid #30243f;border-radius:18px}
+.v2-strip-title{font-size:13px;font-weight:800;margin-bottom:10px;letter-spacing:.2px}
+.v2-people{display:flex;gap:13px;overflow-x:auto;padding:2px 1px 7px;scrollbar-width:thin}
+.v2-person{flex:0 0 66px;width:66px;text-align:center;background:transparent;border:0;padding:0;color:#fff;min-width:0}
+.v2-person-ring{width:58px;height:58px;margin:0 auto 6px;border-radius:50%;padding:2px;background:linear-gradient(135deg,#ec4899,#8b5cf6,#f59e0b)}
+.v2-person-ring img,.v2-person-ring .v2-person-initial{width:100%;height:100%;display:grid;place-items:center;border-radius:50%;object-fit:cover;border:2px solid #171221;background:#30243f;font-weight:900}
+.v2-person-name{font-size:10px;line-height:1.25;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#d8cde5}
+#feed{display:flex;flex-direction:column;gap:16px}
+.v2-reel{position:relative;overflow:hidden;margin:0;background:#171221;border:1px solid #30243f;border-radius:21px;box-shadow:0 12px 38px #0005}
+.v2-reel-head{display:flex;align-items:center;gap:10px;padding:12px 13px;background:#171221}
+.v2-reel-head .avatar{width:40px;height:40px}
+.v2-reel-head .name{font-size:13px}
+.v2-reel-head .muted{font-size:11px}
+.v2-follow-chip{margin-left:auto;padding:7px 10px;font-size:11px;border-radius:11px}
+.v2-media{position:relative;height:min(68vh,680px);min-height:300px;background:#08060d;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.v2-media img,.v2-media video{width:100%;height:100%;max-height:680px;object-fit:cover;display:block;background:#08060d}
+.v2-media.v2-no-media{height:auto;min-height:250px;padding:34px 22px;display:block;background:radial-gradient(ellipse at top right,#38204d,#100c18 70%)}
+.v2-no-media .v2-no-media-text{font-size:22px;line-height:1.5;font-weight:650;white-space:pre-wrap;overflow-wrap:anywhere}
+.v2-overlay{position:absolute;left:0;right:0;bottom:0;padding:65px 74px 15px 14px;background:linear-gradient(transparent,#08060de8);pointer-events:none}
+.v2-caption{font-size:14px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;text-shadow:0 1px 5px #000}
+.v2-location{font-size:11px;color:#e5d7f3;margin-top:7px}
+.v2-side{position:absolute;right:10px;bottom:18px;display:flex;flex-direction:column;gap:12px;align-items:center;z-index:2}
+.v2-side button{width:49px;height:49px;border-radius:50%;padding:0;background:#171221d9;border:1px solid #ffffff35;color:#fff;font-size:20px;backdrop-filter:blur(8px)}
+.v2-side button.v2-liked{color:#fb7185;border-color:#fb7185}
+.v2-side small{font-size:10px;color:#fff;text-shadow:0 1px 4px #000}
+.v2-side .v2-action{display:flex;flex-direction:column;align-items:center;gap:3px}
+.v2-music{padding:10px 13px;background:#20182b;border-top:1px solid #30243f}
+.v2-music b{font-size:12px}
+.v2-music .muted{font-size:11px}
+.v2-music audio{width:100%;height:34px;margin-top:6px}
+.v2-text-footer{padding:10px 13px;color:#c7b8d7;font-size:11px;display:flex;justify-content:space-between;gap:8px}
+.v2-empty{padding:25px 18px;border:1px solid #30243f;border-radius:18px;background:#171221;text-align:center;color:#c9bad8;line-height:1.5}
+.bottom{background:#130f1cf7;border-top:1px solid #30243f;display:flex;gap:3px;padding:7px 8px calc(7px + env(safe-area-inset-bottom));}
+.bottom button{min-width:0;max-width:none;flex:1;padding:7px 3px;color:#a99bbd;font-size:10px;border-radius:13px}
+.bottom button.active{background:#322344;color:#fff}
+.bottom span{font-size:20px}
+#notificationBadge{position:absolute;top:1px;right:1px}
+.card{background:#171221;border-color:#30243f}
+.modalbox{background:#171221;border-color:#3c2c50}
+@media(min-width:700px){body{padding-bottom:20px}.bottom{position:static;max-width:720px;margin:14px auto;background:transparent;border:0;padding:10px}.bottom button{border:1px solid #30243f;border-radius:13px}.v2-media{height:620px}}
+@media(max-width:390px){.v2-media{min-height:280px;height:62vh}.v2-side{right:7px;bottom:14px;gap:9px}.v2-side button{width:44px;height:44px}.v2-overlay{padding-right:65px}}
+`;
+    html=html.replace('</style>',v2css+'\n</style>');
+    html=html.replace('<title>ZANGO VIBES V1.6 — Creator Studio</title>','<title>ZANGO VIBES V2 — Reels</title>');
+
+    const oldLogout='<button class="ghost" id="logoutBtn" style="display:none">Toka</button>';
+    const newHeader=`<div class="topactions">
+   <button class="v2-icon" data-page="notifications" title="Notifications" aria-label="Notifications">♧<small id="notificationBadge" class="badge-count hidden">0</small></button>
+   <button class="v2-icon" data-page="chat" title="Chat" aria-label="Chat">✉</button>
+   <button class="v2-icon hidden" id="adminNav" data-page="admin" title="Admin" aria-label="Admin">⚙</button>
+   <button class="ghost" id="logoutBtn" style="display:none">Toka</button>
+  </div>`;
+    if(!html.includes(oldLogout))throw new Error('Sehemu ya header ya V1.6 haikupatikana; sijaendelea kubadilisha faili.');
+    html=html.replace(oldLogout,newHeader);
+
+    const oldFeed='<div id="feed" class="loader">Inapakia posts...</div>';
+    const newFeed=`<div id="peopleStrip"><div class="v2-strip-title">Watu wa VIBES</div><div class="v2-people"><div class="muted small">Inapakia creators...</div></div></div>
+  <div id="feed" class="loader">Inapakia posts...</div>`;
+    if(!html.includes(oldFeed))throw new Error('Sehemu ya feed haikupatikana.');
+    html=html.replace(oldFeed,newFeed);
+
+    const nav=`<nav class="bottom hidden" id="bottomNav">
+ <button class="active" data-page="home"><span>⌂</span>Home</button>
+ <button data-page="search"><span>⌕</span>Tafuta</button>
+ <button data-page="create"><span>＋</span>Create</button>
+ <button data-page="music"><span>♫</span>Muziki</button>
+ <button data-page="profile"><span>◉</span>Profile</button>
+</nav>`;
+    html=html.replace(/<nav class="bottom hidden" id="bottomNav">[\s\S]*?<\/nav>/,nav);
+    html=html.replace('async function loadFeed(){','async function loadFeedV1(){');
+
+    const v2js=new TextDecoder().decode(Uint8Array.from(atob('Ci8qID09PT09PT09PT09PT09PT09IFpBTkdPIFZJQkVTIFYyIEZFRUQgPT09PT09PT09PT09PT09PT0gKi8KYXN5bmMgZnVuY3Rpb24gbG9hZFBlb3BsZVN0cmlwKCl7CiBjb25zdCBib3g9JCgncGVvcGxlU3RyaXAnKTtpZighYm94fHwhdXNlcilyZXR1cm47CiBjb25zdCByb3c9Ym94LnF1ZXJ5U2VsZWN0b3IoJy52Mi1wZW9wbGUnKTtpZighcm93KXJldHVybjsKIHRyeXsKICBjb25zdCB7ZGF0YTpyZWNlbnQsZXJyb3J9PWF3YWl0IGRiLmZyb20oJ3Bvc3RzJykuc2VsZWN0KCd1c2VyX2lkLGNyZWF0ZWRfYXQnKS5vcmRlcignY3JlYXRlZF9hdCcse2FzY2VuZGluZzpmYWxzZX0pLmxpbWl0KDE2KTsKICBpZihlcnJvcil0aHJvdyBlcnJvcjsKICBjb25zdCBpZHM9Wy4uLm5ldyBTZXQoKHJlY2VudHx8W10pLm1hcCh4PT54LnVzZXJfaWQpLmZpbHRlcihCb29sZWFuKSldLmZpbHRlcihpZD0+aWQhPT11c2VyLmlkKS5zbGljZSgwLDEyKTsKICBjb25zdCB7ZGF0YTpwcm9maWxlc309aWRzLmxlbmd0aD9hd2FpdCBkYi5mcm9tKCdwcm9maWxlcycpLnNlbGVjdCgnaWQsZnVsbF9uYW1lLHVzZXJuYW1lLGF2YXRhcl91cmwnKS5pbignaWQnLGlkcyk6e2RhdGE6W119OwogIGNvbnN0IGJ5SWQ9bmV3IE1hcCgocHJvZmlsZXN8fFtdKS5tYXAocD0+W3AuaWQscF0pKTsKICBjb25zdCBwZW9wbGU9W107aWYobXlQcm9maWxlKXBlb3BsZS5wdXNoKG15UHJvZmlsZSk7CiAgaWRzLmZvckVhY2goaWQ9Pntjb25zdCBwPWJ5SWQuZ2V0KGlkKTtpZihwKXBlb3BsZS5wdXNoKHApfSk7CiAgaWYoIXBlb3BsZS5sZW5ndGgpe3Jvdy5pbm5lckhUTUw9JzxzcGFuIGNsYXNzPSJtdXRlZCBzbWFsbCI+QmFkbyBoYWt1bmEgY3JlYXRvcnMuIEt1d2Egd2Ega3dhbnphIGt1Y2hhcGlzaGEhPC9zcGFuPic7cmV0dXJufQogIHJvdy5pbm5lckhUTUw9cGVvcGxlLm1hcCgocCxpKT0+ewogICBjb25zdCBuYW1lPXAuaWQ9PT11c2VyLmlkPydXZXdlJzoocC51c2VybmFtZXx8cC5mdWxsX25hbWV8fCdDcmVhdG9yJyk7CiAgIGNvbnN0IHBpYz1wLmF2YXRhcl91cmw/YDxpbWcgc3JjPSIke2VzYyhwLmF2YXRhcl91cmwpfSIgYWx0PSIiPmA6YDxzcGFuIGNsYXNzPSJ2Mi1wZXJzb24taW5pdGlhbCI+JHtpbml0aWFscyhwLmZ1bGxfbmFtZXx8cC51c2VybmFtZSl9PC9zcGFuPmA7CiAgIHJldHVybiBgPGJ1dHRvbiBjbGFzcz0idjItcGVyc29uIiBkYXRhLWNyZWF0b3I9IiR7ZXNjKHAuaWQpfSI+PHNwYW4gY2xhc3M9InYyLXBlcnNvbi1yaW5nIj4ke3BpY308L3NwYW4+PHNwYW4gY2xhc3M9InYyLXBlcnNvbi1uYW1lIj4ke2VzYyhuYW1lKX08L3NwYW4+PC9idXR0b24+YDsKICB9KS5qb2luKCcnKTsKICByb3cucXVlcnlTZWxlY3RvckFsbCgnW2RhdGEtY3JlYXRvcl0nKS5mb3JFYWNoKGI9PmIub25jbGljaz0oKT0+b3BlblVzZXJQcm9maWxlKGIuZGF0YXNldC5jcmVhdG9yKSk7CiB9Y2F0Y2goZSl7Y29uc29sZS53YXJuKCdQZW9wbGUgc3RyaXA6JyxlLm1lc3NhZ2UpO3Jvdy5pbm5lckhUTUw9JzxzcGFuIGNsYXNzPSJtdXRlZCBzbWFsbCI+Q3JlYXRvcnMgd2F0YW9uZWthbmEgaGFwYS48L3NwYW4+J30KfQphc3luYyBmdW5jdGlvbiBsb2FkRmVlZCgpewogaWYoIXVzZXIpcmV0dXJuOwogY29uc3QgcmVxdWVzdD0rK2ZlZWRSZXF1ZXN0VG9rZW4sYm94PSQoJ2ZlZWQnKTtib3guaW5uZXJIVE1MPSc8ZGl2IGNsYXNzPSJsb2FkZXIiPkluYXBha2lhIFZJQkVTLi4uPC9kaXY+JzsKIGxvYWRQZW9wbGVTdHJpcCgpOwogbGV0IHE9ZGIuZnJvbSgncG9zdHMnKS5zZWxlY3QoJyonKS5vcmRlcignY3JlYXRlZF9hdCcse2FzY2VuZGluZzpmYWxzZX0pLmxpbWl0KDUwKTsKIGlmKGFjdGl2ZUZlZWQ9PT0nemFuemliYXInKXE9cS5ub3QoJ2xvY2F0aW9uJywnaXMnLG51bGwpOwogbGV0IHtkYXRhOnBvc3RzLGVycm9yfT1hd2FpdCBxO2lmKHJlcXVlc3QhPT1mZWVkUmVxdWVzdFRva2VuKXJldHVybjsKIGlmKGVycm9yKXtib3guaW5uZXJIVE1MPWA8ZGl2IGNsYXNzPSJ2Mi1lbXB0eSI+SW1lc2hpbmRpa2FuYSBrdXBha2lhIHBvc3RzOiAke2VzYyhlcnJvci5tZXNzYWdlKX08L2Rpdj5gO3JldHVybn0KIGlmKGFjdGl2ZUZlZWQ9PT0ndmlkZW8nJiZwb3N0cz8ubGVuZ3RoKXsKICBjb25zdCB7ZGF0YTptfT1hd2FpdCBkYi5mcm9tKCdwb3N0X21lZGlhJykuc2VsZWN0KCcqJykuaW4oJ3Bvc3RfaWQnLHBvc3RzLm1hcChwPT5wLmlkKSkuZXEoJ21lZGlhX3R5cGUnLCd2aWRlbycpOwogIGlmKHJlcXVlc3QhPT1mZWVkUmVxdWVzdFRva2VuKXJldHVybjtjb25zdCBhbGxvd2VkPW5ldyBTZXQoKG18fFtdKS5tYXAoeD0+eC5wb3N0X2lkKSk7cG9zdHM9cG9zdHMuZmlsdGVyKHA9PmFsbG93ZWQuaGFzKHAuaWQpKTsKIH0KIGlmKCFwb3N0cz8ubGVuZ3RoKXtib3guaW5uZXJIVE1MPSc8ZGl2IGNsYXNzPSJ2Mi1lbXB0eSI+PGI+S2FyaWJ1IFpBTkdPIFZJQkVTIOKcqDwvYj48cD5CYWRvIGhha3VuYSBwb3N0IGhhcGEuIEt1d2Egd2Ega3dhbnphIGt1c2hpcmlraSBwaWNoYSwgdmlkZW8gYXUgbWF3YXpvIHlha28uPC9wPjxidXR0b24gb25jbGljaz0ibmF2aWdhdGUoXCdjcmVhdGVcJykiPu+8iyBUZW5nZW5lemEgUG9zdDwvYnV0dG9uPjwvZGl2Pic7cmV0dXJufQogY29uc3QgaWRzPXBvc3RzLm1hcChwPT5wLmlkKSx1aWRzPVsuLi5uZXcgU2V0KHBvc3RzLm1hcChwPT5wLnVzZXJfaWQpKV07CiBjb25zdCBbcHIsbXIsbHIsY3IscG1yXT1hd2FpdCBQcm9taXNlLmFsbChbCiAgZGIuZnJvbSgncHJvZmlsZXMnKS5zZWxlY3QoJyonKS5pbignaWQnLHVpZHMpLAogIGRiLmZyb20oJ3Bvc3RfbWVkaWEnKS5zZWxlY3QoJyonKS5pbigncG9zdF9pZCcsaWRzKSwKICBkYi5mcm9tKCdsaWtlcycpLnNlbGVjdCgncG9zdF9pZCx1c2VyX2lkJykuaW4oJ3Bvc3RfaWQnLGlkcyksCiAgZGIuZnJvbSgnY29tbWVudHMnKS5zZWxlY3QoJ3Bvc3RfaWQnKS5pbigncG9zdF9pZCcsaWRzKSwKICBkYi5mcm9tKCdwb3N0X211c2ljJykuc2VsZWN0KCcqJykuaW4oJ3Bvc3RfaWQnLGlkcykKIF0pOwogaWYocmVxdWVzdCE9PWZlZWRSZXF1ZXN0VG9rZW4pcmV0dXJuOwogY29uc3QgdHJhY2tJZHM9Wy4uLm5ldyBTZXQoKHBtci5kYXRhfHxbXSkubWFwKHg9PngudHJhY2tfaWQpKV07bGV0IHRyYWNrcz1bXTsKIGlmKHRyYWNrSWRzLmxlbmd0aCl7Y29uc3Qgcj1hd2FpdCBkYi5mcm9tKCdtdXNpY190cmFja3MnKS5zZWxlY3QoJyonKS5pbignaWQnLHRyYWNrSWRzKTt0cmFja3M9ci5kYXRhfHxbXX0KIGlmKHJlcXVlc3QhPT1mZWVkUmVxdWVzdFRva2VuKXJldHVybjsKIGNvbnN0IHByb2ZpbGVNYXA9bmV3IE1hcCgocHIuZGF0YXx8W10pLm1hcChwPT5bcC5pZCxwXSkpOwogY29uc3QgbWVkaWFNYXA9bmV3IE1hcCgpOyhtci5kYXRhfHxbXSkuZm9yRWFjaChtPT57aWYoIW1lZGlhTWFwLmhhcyhtLnBvc3RfaWQpKW1lZGlhTWFwLnNldChtLnBvc3RfaWQsW10pO21lZGlhTWFwLmdldChtLnBvc3RfaWQpLnB1c2gobSl9KTsKIGNvbnN0IHRyYWNrTWFwPW5ldyBNYXAodHJhY2tzLm1hcCh0PT5bdC5pZCx0XSkpLHBvc3RNdXNpY01hcD1uZXcgTWFwKChwbXIuZGF0YXx8W10pLm1hcCh4PT5beC5wb3N0X2lkLHhdKSk7CiBib3guaW5uZXJIVE1MPScnOwogZm9yKGNvbnN0IHAgb2YgcG9zdHMpewogIGNvbnN0IHByb2Y9cHJvZmlsZU1hcC5nZXQocC51c2VyX2lkKXx8e30sbWluZT0obHIuZGF0YXx8W10pLnNvbWUobD0+bC5wb3N0X2lkPT09cC5pZCYmbC51c2VyX2lkPT09dXNlci5pZCk7CiAgY29uc3QgbGM9KGxyLmRhdGF8fFtdKS5maWx0ZXIobD0+bC5wb3N0X2lkPT09cC5pZCkubGVuZ3RoLGNjPShjci5kYXRhfHxbXSkuZmlsdGVyKGM9PmMucG9zdF9pZD09PXAuaWQpLmxlbmd0aDsKICBjb25zdCBtZWRpYT0obWVkaWFNYXAuZ2V0KHAuaWQpfHxbXSk7CiAgY29uc3QgbWVkaWFIdG1sPW1lZGlhLm1hcChtPT57CiAgIGNvbnN0IHVybD1kYi5zdG9yYWdlLmZyb20oJ3ZpYmVzLW1lZGlhJykuZ2V0UHVibGljVXJsKG0uc3RvcmFnZV9wYXRoKS5kYXRhLnB1YmxpY1VybDsKICAgcmV0dXJuIG0ubWVkaWFfdHlwZT09PSd2aWRlbyc/YDx2aWRlbyBjbGFzcz0idjItcG9zdC12aWRlbyIgY29udHJvbHMgcGxheXNpbmxpbmUgcHJlbG9hZD0ibWV0YWRhdGEiIHNyYz0iJHtlc2ModXJsKX0iPjwvdmlkZW8+YDpgPGltZyBjbGFzcz0idjItcG9zdC1pbWFnZSIgbG9hZGluZz0ibGF6eSIgc3JjPSIke2VzYyh1cmwpfSIgYWx0PSJQb3N0IHlhICR7ZXNjKHByb2YudXNlcm5hbWV8fCdtdHVtaWFqaScpfSI+YDsKICB9KS5qb2luKCcnKTsKICBjb25zdCBoYXNNZWRpYT0hIW1lZGlhSHRtbDsKICBjb25zdCBwbT1wb3N0TXVzaWNNYXAuZ2V0KHAuaWQpLHRyYWNrPXBtP3RyYWNrTWFwLmdldChwbS50cmFja19pZCk6bnVsbDsKICBsZXQgbXVzaWNIdG1sPScnOwogIGlmKHRyYWNrKXtjb25zdCB1cmw9bXVzaWNQdWJsaWNVUkwodHJhY2spO211c2ljSHRtbD1gPGRpdiBjbGFzcz0idjItbXVzaWMiPjxkaXYgY2xhc3M9InJvdyBiZXR3ZWVuIj48ZGl2PjxiPuKZqyAke2VzYyh0cmFjay50aXRsZXx8J1dpbWJvJyl9PC9iPjxkaXYgY2xhc3M9Im11dGVkIj4ke2VzYyh0cmFjay5hcnRpc3R8fCdaQU5HTyBWSUJFUyBNdXNpYycpfTwvZGl2PjwvZGl2PjxzcGFuIGNsYXNzPSJzbWFsbCBtdXRlZCI+JHtmb3JtYXRUaW1lKHBtLnN0YXJ0X3NlY29uZHN8fDApfSR7cG0uZW5kX3NlY29uZHMhPW51bGw/JyDigJMgJytmb3JtYXRUaW1lKHBtLmVuZF9zZWNvbmRzKTonJ308L3NwYW4+PC9kaXY+PGF1ZGlvIGNsYXNzPSJ2Mi1wb3N0LWF1ZGlvIiBjb250cm9scyBwcmVsb2FkPSJub25lIiBzcmM9IiR7ZXNjKHVybCl9IiBkYXRhLXN0YXJ0PSIke051bWJlcihwbS5zdGFydF9zZWNvbmRzKXx8MH0iIGRhdGEtZW5kPSIke3BtLmVuZF9zZWNvbmRzPT1udWxsPycnOk51bWJlcihwbS5lbmRfc2Vjb25kcyl9Ij48L2F1ZGlvPjwvZGl2PmB9CiAgY29uc3QgYXJ0aWNsZT1kb2N1bWVudC5jcmVhdGVFbGVtZW50KCdhcnRpY2xlJyk7YXJ0aWNsZS5jbGFzc05hbWU9J3YyLXJlZWwnOwogIGNvbnN0IGRhdGU9cC5jcmVhdGVkX2F0P25ldyBEYXRlKHAuY3JlYXRlZF9hdCkudG9Mb2NhbGVEYXRlU3RyaW5nKCdzdy1UWicpOidWSUJFUyc7CiAgYXJ0aWNsZS5pbm5lckhUTUw9YDxkaXYgY2xhc3M9InYyLXJlZWwtaGVhZCI+JHthdmF0YXIocHJvZil9PGRpdiBjbGFzcz0iZ3JvdyI+PGRpdiBjbGFzcz0ibmFtZSI+JHtlc2MocHJvZi5mdWxsX25hbWV8fHByb2YudXNlcm5hbWV8fCdNdHVtaWFqaScpfTwvZGl2PjxkaXYgY2xhc3M9Im11dGVkIj5AJHtlc2MocHJvZi51c2VybmFtZXx8J3ZpYmVzX3VzZXInKX0gwrcgJHtkYXRlfTwvZGl2PjwvZGl2PjxidXR0b24gY2xhc3M9Imdob3N0IHYyLWZvbGxvdy1jaGlwIiBkYXRhLW9wZW4tdXNlcj0iJHtlc2MocC51c2VyX2lkKX0iPldhc2lmdTwvYnV0dG9uPjwvZGl2PgogIDxkaXYgY2xhc3M9InYyLW1lZGlhICR7aGFzTWVkaWE/Jyc6J3YyLW5vLW1lZGlhJ30iPiR7aGFzTWVkaWE/bWVkaWFIdG1sOmA8ZGl2IGNsYXNzPSJ2Mi1uby1tZWRpYS10ZXh0Ij4ke2VzYyhwLmNvbnRlbnR8fCdTaGlyaWtpIG1hd2F6byB5YWtvIG5hIFpBTkdPIFZJQkVTIOKcqCcpfTwvZGl2PmB9CiAgICR7aGFzTWVkaWEmJnAuY29udGVudD9gPGRpdiBjbGFzcz0idjItb3ZlcmxheSI+PGRpdiBjbGFzcz0idjItY2FwdGlvbiI+JHtlc2MocC5jb250ZW50KX08L2Rpdj4ke3AubG9jYXRpb24/YDxkaXYgY2xhc3M9InYyLWxvY2F0aW9uIj7ijJYgJHtlc2MocC5sb2NhdGlvbil9PC9kaXY+YDonJ308L2Rpdj5gOicnfQogICA8ZGl2IGNsYXNzPSJ2Mi1zaWRlIj48ZGl2IGNsYXNzPSJ2Mi1hY3Rpb24iPjxidXR0b24gY2xhc3M9IiR7bWluZT8ndjItbGlrZWQnOicnfSIgZGF0YS1saWtlPSIke2VzYyhwLmlkKX0iIGFyaWEtbGFiZWw9Ikxpa2UiPiR7bWluZT8n4pmlJzon4pmhJ308L2J1dHRvbj48c21hbGw+JHtsY308L3NtYWxsPjwvZGl2PjxkaXYgY2xhc3M9InYyLWFjdGlvbiI+PGJ1dHRvbiBkYXRhLWNvbW1lbnQ9IiR7ZXNjKHAuaWQpfSIgYXJpYS1sYWJlbD0iTWFvbmkiPuKWojwvYnV0dG9uPjxzbWFsbD4ke2NjfTwvc21hbGw+PC9kaXY+PGRpdiBjbGFzcz0idjItYWN0aW9uIj48YnV0dG9uIGRhdGEtc2hhcmU9IiR7ZXNjKHAuaWQpfSIgYXJpYS1sYWJlbD0iU2hhcmUiPuKGlzwvYnV0dG9uPjxzbWFsbD5TaGlyaWtpPC9zbWFsbD48L2Rpdj48ZGl2IGNsYXNzPSJ2Mi1hY3Rpb24iPjxidXR0b24gZGF0YS1vcGVuLXVzZXI9IiR7ZXNjKHAudXNlcl9pZCl9IiBhcmlhLWxhYmVsPSJXYXNpZnUiPuKXiTwvYnV0dG9uPjxzbWFsbD5XYXNpZnU8L3NtYWxsPjwvZGl2PjwvZGl2PgogIDwvZGl2PiR7bXVzaWNIdG1sfTxkaXYgY2xhc3M9InYyLXRleHQtZm9vdGVyIj48c3Bhbj4ke3AubG9jYXRpb24/YOKMliAke2VzYyhwLmxvY2F0aW9uKX1gOidaQU5HTyBWSUJFUyDCtyBaYW56aWJhcid9PC9zcGFuPjxzcGFuPiR7aGFzTWVkaWE/J1BpY2hhIC8gVmlkZW8nOidQb3N0J308L3NwYW4+PC9kaXY+YDsKICBib3guYXBwZW5kQ2hpbGQoYXJ0aWNsZSk7CiB9CiBib3gucXVlcnlTZWxlY3RvckFsbCgnW2RhdGEtbGlrZV0nKS5mb3JFYWNoKGI9PmIub25jbGljaz0oKT0+dG9nZ2xlTGlrZShiLmRhdGFzZXQubGlrZSkpOwogYm94LnF1ZXJ5U2VsZWN0b3JBbGwoJ1tkYXRhLWNvbW1lbnRdJykuZm9yRWFjaChiPT5iLm9uY2xpY2s9KCk9Pm9wZW5Db21tZW50cyhiLmRhdGFzZXQuY29tbWVudCkpOwogYm94LnF1ZXJ5U2VsZWN0b3JBbGwoJ1tkYXRhLW9wZW4tdXNlcl0nKS5mb3JFYWNoKGI9PmIub25jbGljaz0oKT0+b3BlblVzZXJQcm9maWxlKGIuZGF0YXNldC5vcGVuVXNlcikpOwogYm94LnF1ZXJ5U2VsZWN0b3JBbGwoJ1tkYXRhLXNoYXJlXScpLmZvckVhY2goYj0+Yi5vbmNsaWNrPWFzeW5jKCk9PnsKICBjb25zdCB1cmw9bG9jYXRpb24ub3JpZ2luK2xvY2F0aW9uLnBhdGhuYW1lKycjcG9zdC0nK2VuY29kZVVSSUNvbXBvbmVudChiLmRhdGFzZXQuc2hhcmUpOwogIHRyeXtpZihuYXZpZ2F0b3Iuc2hhcmUpYXdhaXQgbmF2aWdhdG9yLnNoYXJlKHt0aXRsZTonWkFOR08gVklCRVMnLHRleHQ6J0FuZ2FsaWEgcG9zdCBoaWkga3dlbnllIFpBTkdPIFZJQkVTJyx1cmx9KTtlbHNlIGlmKG5hdmlnYXRvci5jbGlwYm9hcmQ/LndyaXRlVGV4dCl7YXdhaXQgbmF2aWdhdG9yLmNsaXBib2FyZC53cml0ZVRleHQodXJsKTt0b2FzdCgnTGluayB5YSBwb3N0IGltZW5ha2lsaXdhLicpfWVsc2UgdG9hc3QodXJsKX1jYXRjaChlKXtpZihlLm5hbWUhPT0nQWJvcnRFcnJvcicpdG9hc3QoJ0ltZXNoaW5kaWthbmEga3VzaGlyaWtpIGxpbmsuJyl9CiB9KTsKIGJveC5xdWVyeVNlbGVjdG9yQWxsKCcudjItcG9zdC1hdWRpbycpLmZvckVhY2goYXVkaW89PnsKICBhdWRpby5hZGRFdmVudExpc3RlbmVyKCdwbGF5JywoKT0+e2lmKCFhdWRpby5kYXRhc2V0LnN0YXJ0ZWQpe2F1ZGlvLmN1cnJlbnRUaW1lPU51bWJlcihhdWRpby5kYXRhc2V0LnN0YXJ0KXx8MDthdWRpby5kYXRhc2V0LnN0YXJ0ZWQ9JzEnfX0pOwogIGF1ZGlvLmFkZEV2ZW50TGlzdGVuZXIoJ3RpbWV1cGRhdGUnLCgpPT57Y29uc3QgZW5kPWF1ZGlvLmRhdGFzZXQuZW5kO2lmKGVuZCE9PScnJiZOdW1iZXIoZW5kKT4wJiZhdWRpby5jdXJyZW50VGltZT49TnVtYmVyKGVuZCkpe2F1ZGlvLnBhdXNlKCk7YXVkaW8uY3VycmVudFRpbWU9TnVtYmVyKGF1ZGlvLmRhdGFzZXQuc3RhcnQpfHwwO2F1ZGlvLmRhdGFzZXQuc3RhcnRlZD0nJ319KTsKICBhdWRpby5hZGRFdmVudExpc3RlbmVyKCdlbmRlZCcsKCk9PnthdWRpby5kYXRhc2V0LnN0YXJ0ZWQ9Jyd9KTsKIH0pOwp9Ci8qIEhlYWRlciBzaG9ydGN1dHMgYW5kIHRoZSBmaXZlLWl0ZW0gYm90dG9tIG5hdmlnYXRpb24gdXNlIHRoZSBvcmlnaW5hbCBuYXZpZ2F0aW9uIHN5c3RlbS4gKi8='),ch=>ch.charCodeAt(0)));
+    if(!html.includes('init();'))throw new Error('Sehemu ya kuanzisha app haikupatikana.');
+    html=html.replace('init();',v2js+'\ninit();');
+
+    document.open();document.write(html);document.close();
+  }catch(error){
+    const p=errorBox||boot;
+    p.textContent=error?.message||String(error);
+    if(boot)boot.style.display='grid';
+    console.error('ZANGO VIBES V2 boot error:',error);
+  }
+})();
+</script>
+</body>
+</html>
